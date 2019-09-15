@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t owenh/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true owenh/react-test npm test
+
+after_success:
+  - docker build -t owenh/muli-client ./client
+  - docker build -t owenh/muli-nginx ./nginx
+  - docker build -t owenh/muli-server ./server
+  - docker build -t owenh/muli-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push owenh/muli-client
+  - docker push owenh/muli-nginx
+  - docker push owenh/muli-server
+  - docker push owenh/muli-worker
